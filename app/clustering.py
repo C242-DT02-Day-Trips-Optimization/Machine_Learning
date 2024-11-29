@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def tensorflow_kmeans(data, num_clusters, num_iterations=100, penalty_threshold=0.3, penalty_factor=0.5):
+def tensorflow_kmeans(data, num_clusters, num_iterations=50, penalty_threshold=0.3, penalty_factor=0.5, tol=1e-4):
     """
     Custom K-means clustering implementation using TensorFlow with soft penalties for distant points.
 
@@ -23,6 +23,7 @@ def tensorflow_kmeans(data, num_clusters, num_iterations=100, penalty_threshold=
     data = tf.convert_to_tensor(data, dtype=tf.float32)
     initial_centroids = tf.slice(tf.random.shuffle(data), [0, 0], [num_clusters, -1])
     centroids = tf.Variable(initial_centroids)
+    prev_centroids = tf.Variable(tf.zeros_like(centroids))  # Store centroids from the previous iteration
 
     for _ in range(num_iterations):
         # Compute distances from points to centroids (Euclidean distance)
@@ -54,5 +55,13 @@ def tensorflow_kmeans(data, num_clusters, num_iterations=100, penalty_threshold=
 
         # Update centroids
         centroids.assign(tf.stack(new_centroids))
+
+        # Check for early stopping
+        centroid_shift = tf.reduce_max(tf.norm(centroids - prev_centroids, axis=1))  # Largest centroid movement
+        if centroid_shift.numpy() < tol:
+            break
+
+        # Update previous centroids
+        prev_centroids.assign(centroids)
 
     return centroids.numpy(), cluster_assignments.numpy()

@@ -1,144 +1,127 @@
-from datetime import datetime, timedelta
 from geopy.distance import geodesic
 from concurrent.futures import ThreadPoolExecutor
+import pandas as pd
+from datetime import datetime
+import googlemaps
+import math
 
-def handle_unvisitable(locations, clusters, daily_start, daily_end):
+# Initialize the Google Maps client with API key
+gmaps = googlemaps.Client(key='API_KEY')
+
+def get_travel_time(start_coords, end_coords, distance_threshold=1.0):
     """
-    Fitting unvisitable locations data into other clusters based on their proximity and time constraints (if possible)
-
-    Parameters:
-        locations (list): Unvisitable locations list
-        clusters (dict): Dictionary containing existing clusters and their schedules
-        daily_start (str): Daily starting time in "HH:MM" format
-        daily_end (str): Daily ending time in "HH:MM" format
-
-    Returns:
-        dict: A dictionary with updated clusters and remaining unvisitable locations
+    Get travel time between two locations using Google Maps API.
+    :param start_coords: Tuple (lat, lon) for the starting location.
+    :param end_coords: Tuple (lat, lon) for the ending location.
+    :param distance_threshold: The threshold distance in kilometers to determine walking or driving mode.
+    :return: Travel time in minutes (rounded up) and the mode used (walking/driving).
     """
+    # Calculate the distance between start and end locations using geodesic
+    distance = geodesic(start_coords, end_coords).kilometers
+
+    # Determine the mode based on distance
+    mode = "walking" if distance <= distance_threshold else "driving"
     
+    # Request directions between start and end using the selected mode
+    directions = gmaps.directions(
+        origin=start_coords,
+        destination=end_coords,
+        mode=mode,
+        departure_time=datetime.now()
+    )
+    
+    # Extract travel time (duration) in minutes
+    if directions:
+        duration = directions[0]['legs'][0]['duration']['value'] / 60  # duration in minutes
+        rounded_duration = math.ceil(duration)  # Round up to the nearest minute
+        return rounded_duration, mode  # Return both rounded duration and mode
+    else:
+        # If no directions are found, return a default value (or handle as needed)
+        return 0, mode
+
+# Helper function to calculate the total available time in minutes
+def calculate_total_time_in_minutes(daily_start_time, daily_end_time):
+    """
+    Calculate total available time in minutes based on start and end times.
+    """
+    start_time = datetime.strptime(daily_start_time, "%H:%M")
+    end_time = datetime.strptime(daily_end_time, "%H:%M")
+    total_time = (end_time - start_time).seconds / 60  # Convert seconds to minutes
+    return total_time
+
+# Function to calculate the average duration for each location in the cluster
+def calculate_average_duration(total_time, num_locations):
+    """
+    Calculate the average time allocated for each location within a cluster.
+    """
+    if num_locations == 0:
+        return 0
+    return total_time / num_locations
+
+# Function to handle unvisitable locations and fit them into other clusters based on proximity
+def handle_unvisitable(locations, clusters):
     new_unvisitable = []
     for location in locations:
         fit = False
         for cluster_id, cluster_schedule in clusters.items():
-            result = schedule_single_location(location, cluster_schedule["schedule"], daily_start, daily_end)
+            result = schedule_single_location(location, cluster_schedule["schedule"])
             if result:
                 cluster_schedule["schedule"].append(result)
-                cluster_schedule["schedule"].sort(key=lambda x: x["start_time"])
+                cluster_schedule["schedule"].sort(key=lambda x: x["proximity_to_next"])
                 fit = True
                 break
         if not fit:
             new_unvisitable.append(location)
-
     return {"clusters": clusters, "unvisitable": new_unvisitable}
 
-def schedule_single_location(location, current_schedule, daily_start, daily_end):
+# Function to schedule locations within a cluster based purely on proximity
+def schedule_cluster_with_proximity(cluster, daily_start_time_str, daily_end_time_str):
     """
-    Schedule a single location within a cluster, ensuring it fits within the daily and business hour constraints.
-
-    Parameters:
-        location (dict): The location to schedule, with details such as opening hours and duration.
-        current_schedule (list): Current schedule of the cluster.
-        daily_start (str): The daily starting time in "HH:MM" format.
-        daily_end (str): The daily ending time in "HH:MM" format.
-
-    Returns:
-        dict or None: The scheduled entry or None if the location cannot be scheduled.
-    """
-    
-    # Convert string to datetime object
-    daily_start_time = datetime.strptime(daily_start, "%H:%M")
-    daily_end_time = datetime.strptime(daily_end, "%H:%M")
-    opening_time = datetime.strptime(location.opening_hours, "%H:%M")
-    closing_time = datetime.strptime(location.closing_hours, "%H:%M")
-
-    # Determine the earliest possible start time
-    start_time = max(daily_start_time, opening_time)
-    end_time = start_time + timedelta(hours=location.duration)
-
-    # Ensure the location fits within business hours and daily time constraints
-    if end_time > min(daily_end_time, closing_time):
-        return None
-
-    # Check availability in the schedule
-    # Iterating through the current schedule
-    for i, event in enumerate(current_schedule):
-        
-        # Convert all event start and end times to datetime objects
-        event_start = datetime.strptime(event["start_time"], "%H:%M")
-        event_end = datetime.strptime(event["end_time"], "%H:%M")
-
-        # If location fits before the first event
-        if i == 0 and end_time <= event_start:
-            return create_schedule_entry(location, start_time, end_time)
-
-        # If location fits between events
-        if i > 0:
-            prev_event_end = datetime.strptime(current_schedule[i - 1]["end_time"], "%H:%M")
-            if prev_event_end + timedelta(hours=location.duration) <= event_start:
-                start_time = prev_event_end
-                end_time = start_time + timedelta(hours=location.duration)
-                return create_schedule_entry(location, start_time, end_time)
-
-    # If location fits after the last event
-    if current_schedule:
-        last_event_end = datetime.strptime(current_schedule[-1]["end_time"], "%H:%M")
-        if last_event_end + timedelta(hours=location.duration) <= min(daily_end_time, closing_time):
-            start_time = last_event_end
-            end_time = start_time + timedelta(hours=location.duration)
-            return create_schedule_entry(location, start_time, end_time)
-
-    # If no events exist and location fits in the day
-    if not current_schedule and end_time <= min(daily_end_time, closing_time):
-        return create_schedule_entry(location, start_time, end_time)
-
-    return None  # Cannot fit
-
-def create_schedule_entry(location, start_time, end_time):
-    """
-    Returning schedule entry with the location's details and scheduled times.
-    """
-    return {
-        "name": location.name,
-        "coordinates": location.coordinates,
-        "start_time": start_time.strftime("%H:%M"),
-        "end_time": end_time.strftime("%H:%M")
-    }
-
-def schedule_cluster_with_priorities(cluster, daily_start="08:00", daily_end="20:00"):
-    """
-    Schedule locations within a cluster, balancing proximity and business hours.
-
-    Parameters:
-        cluster (list): List of locations in the cluster.
-        daily_start (str): The daily starting time in "HH:MM" format.
-        daily_end (str): The daily ending time in "HH:MM" format.
-
-    Return a dict of scheduled locations and any unvisitable locations.
+    Schedule locations within a cluster, first considering travel time, and then calculating the avg_duration.
+    The travel time mode is determined by the distance between locations (walking vs. driving).
     """
     schedule = []
     unvisitable = []
-    current_time = datetime.strptime(daily_start, "%H:%M")
+
+    daily_start_time = datetime.strptime(daily_start_time_str, "%H:%M")
+    daily_end_time = datetime.strptime(daily_end_time_str, "%H:%M")
+
+    # Calculate the total time available for scheduling
+    total_available_time = (daily_end_time - daily_start_time).seconds // 60  # In minutes
+    total_locations = len(cluster)
+
+    # Calculate total travel time
+    total_travel_time = 0
+    for i in range(len(cluster) - 1):
+        travel_time, mode = get_travel_time(cluster[i].coordinates, cluster[i + 1].coordinates)
+        total_travel_time += travel_time
+
+    # Subtract total travel time from available time to calculate time for activities
+    time_for_activities = total_available_time - total_travel_time
+
+    # Calculate the average duration per location (if there are locations)
+    if total_locations > 0:
+        avg_duration = time_for_activities // total_locations
+    else:
+        avg_duration = 0
+
+    # Start scheduling with the first location
+    if cluster:
+        first_location = cluster[0]
+        schedule.append(create_schedule_entry(first_location, avg_duration=avg_duration))
+        cluster.remove(first_location)
 
     while cluster:
-        if not schedule:
-            # Select the location with the earliest opening time
-            next_location = min(cluster, key=lambda x: datetime.strptime(x.opening_hours, "%H:%M"))
-            cluster.remove(next_location)
-            reason = "Chosen as the first location based on earliest opening hours"
-        else:
-            # Calculate scores for remaining locations based on proximity and time flexibility
-            last_location = schedule[-1]
-            next_location = min(cluster, key=lambda loc: calculate_score(loc, last_location, current_time))
-            cluster.remove(next_location)
-            distance_to_last = geodesic(last_location["coordinates"], next_location.coordinates).kilometers
-            reason = f"Chosen based on proximity ({distance_to_last:.2f} km) and business hours compatibility"
+        # Find the nearest location based on proximity
+        last_location = schedule[-1]
+        next_location = min(cluster, key=lambda loc: geodesic(last_location["coordinates"], loc.coordinates).kilometers)
+        cluster.remove(next_location)
 
-        # Schedule the selected location
-        result = schedule_single_location(next_location, schedule, daily_start, daily_end)
+        # Schedule the location with the calculated avg_duration
+        travel_time, mode = get_travel_time(last_location["coordinates"], next_location.coordinates)
+        result = create_schedule_entry(next_location, avg_duration=avg_duration, travel_time=travel_time, mode=mode)
         if result:
-            result["reason"] = reason
             schedule.append(result)
-            current_time = datetime.strptime(result["end_time"], "%H:%M")
         else:
             unvisitable.append(next_location)
 
@@ -152,45 +135,110 @@ def schedule_cluster_with_priorities(cluster, daily_start="08:00", daily_end="20
 
     return {"schedule": schedule, "unvisitable": unvisitable}
 
-def calculate_score(location, last_location, current_time):
+# Function to schedule a single location based on proximity
+def schedule_single_location(location, current_schedule, avg_duration=None):
     """
-    Calculate a weighted score for scheduling a location.
-    """
-    proximity_score = geodesic(last_location["coordinates"], location.coordinates).kilometers
-    closing_time = datetime.strptime(location.closing_hours, "%H:%M")
-    time_flexibility = max((closing_time - current_time).total_seconds() / 3600, 0.1)
-    return proximity_score + (1 / time_flexibility) # Weighted score (lower is better).
-
-def parallel_schedule_clusters(clusters, daily_start="08:00", daily_end="20:00", num_threads=4):
-    """
-    Schedulling multiple clusters in parallel using multithreading.
+    Schedule a single location within a cluster, purely based on proximity and average duration.
     
-    Return a dict of scheduled clusters and unvisitable locations.
+    Parameters:
+        location (dict): The location to schedule, with details such as coordinates.
+        current_schedule (list): Current schedule of the cluster.
+        avg_duration (int): The average duration for the cluster to be used for this location.
+        
+    Returns:
+        dict or None: The scheduled entry or None if the location cannot be scheduled.
+    """
+    if not current_schedule:
+        # No locations scheduled yet, schedule the first one
+        return create_schedule_entry(location, avg_duration=avg_duration)
+
+    last_location = current_schedule[-1]
+    distance_to_last = geodesic(last_location["coordinates"], location.coordinates).kilometers
+    return create_schedule_entry(location, proximity_to_last=distance_to_last, avg_duration=avg_duration)
+
+# Helper function to create a schedule entry with proximity information
+def create_schedule_entry(location, proximity_to_last=None, avg_duration=None, travel_time=None, mode=None):
+    """
+    Return schedule entry with the location's details, proximity to last location,
+    average duration if provided, and travel time and mode.
+    """
+    entry = {
+        "name": location.name,
+        "coordinates": location.coordinates,
+    }
+    
+    if proximity_to_last is not None:
+        entry["proximity_to_last"] = f"{proximity_to_last:.2f} km"
+    
+    if avg_duration is not None:
+        entry["avg_duration"] = avg_duration
+    
+    if travel_time is not None:
+        entry["travel_time"] = travel_time  # Travel time in minutes
+    
+    if mode is not None:
+        entry["mode"] = mode  # Travel mode: 'driving' or 'walking'
+    
+    return entry
+
+# Function to run scheduling in parallel for multiple clusters
+def parallel_schedule_clusters(clusters, daily_start_time, daily_end_time, num_threads=4):
+    """
+    Schedules multiple clusters in parallel using multithreading.
+    
+    Args:
+        clusters (dict): Dictionary of clusters where key is cluster ID and value is list of locations.
+        daily_start_time (datetime): The start time of the day.
+        daily_end_time (datetime): The end time of the day.
+        num_threads (int): Number of threads to use for parallel processing.
+        
+    Returns:
+        dict: Dictionary with scheduled clusters and unvisitable locations.
     """
     results = {}
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
         futures = {
-            cluster_id: executor.submit(iterative_schedule_cluster, cluster_locations, daily_start, daily_end)
+            cluster_id: executor.submit(
+                schedule_cluster_with_proximity, 
+                cluster_locations, 
+                daily_start_time, 
+                daily_end_time
+            )
             for cluster_id, cluster_locations in clusters.items()
         }
         for cluster_id, future in futures.items():
-            results[cluster_id] = future.result()
+            cluster_data = future.result()
+            
+            # Calculate the average duration for the cluster
+            schedule = cluster_data["schedule"]
+            if schedule:
+                total_duration = sum(location["avg_duration"] for location in schedule)
+                avg_duration = total_duration // len(schedule)
+            else:
+                avg_duration = 0
+
+            # Add the avg_duration to the response for each cluster
+            results[cluster_id] = {
+                "schedule": schedule,
+                "avg_duration": avg_duration,
+                "unvisitable": cluster_data["unvisitable"]
+            }
 
     return results
 
-# 20 Iterations overkill?
-def iterative_schedule_cluster(cluster, daily_start="08:00", daily_end="20:00", max_iterations=20):
+# Function to run multiple iterations of scheduling and find the best schedule
+def iterative_schedule_cluster(cluster, max_iterations=20):
     """
-    Find the best schedule for a single cluster from multiple iterations
+    Find the best schedule for a single cluster from multiple iterations.
     
-    Return a dict of best schedule and any remaining unvisitable locations
+    Return a dict of best schedule and any remaining unvisitable locations.
     """
     best_schedule = None
     best_unvisitable = None
     best_score = float("inf")
 
     for _ in range(max_iterations):
-        result = schedule_cluster_with_priorities(cluster[:], daily_start, daily_end)
+        result = schedule_cluster_with_proximity(cluster[:])
         unvisitable_count = len(result["unvisitable"])
         schedule_length = len(result["schedule"])
         score = unvisitable_count * 1000 - schedule_length
