@@ -76,6 +76,10 @@ fastapi-clustering/
 │   ├── routes.py               # API endpoints for clustering and stuff
 │   ├── scheduling.py           # Scheduling logic for each clustered locations
 │   ├── utils.py                # Utility functions for normalization and visualization
+├── model/
+│   ├── jatim.pkl          
+│   ├── bali.pkl         
+│   ├── jateng.pkl           
 ├── requirements.txt            # Dependencies
 ```
 
