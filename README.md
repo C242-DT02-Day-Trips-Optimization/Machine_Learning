@@ -1,6 +1,6 @@
 ## Multi-Day Trip Cluster
 
-This repository contains a FastAPI-based project that performs clustering using a custom K-means implementation in TensorFlow. It also includes location scheduling based on business hours and proximity between place.
+This repository contains a FastAPI-based project that performs clustering using a custom K-means implementation in TensorFlow and HDBScan for clustering and recommendation. It also includes location scheduling based on proximity between place.
 
 ## Table of Contents
 
@@ -18,11 +18,12 @@ This repository contains a FastAPI-based project that performs clustering using 
 ## Features
 
 - **Clustering with TensorFlow**: Custom K-means implementation with soft penalties for outliers.
+- **Clustering and Recommendation**: HDBScan.
 - **Location Scheduling**: Allocates time slots for visiting clustered locations within business hours.
 
 ## Prerequisites
 
-- **Python 3.9**
+- **Python 3.12**
 - **Conda** (Optional)
 
 ## Installation
@@ -32,14 +33,14 @@ Example of setting up a virtual environment using **Conda** to manage dependenci
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Day-Trips-Optimization/Machine_Learning.git
+   https://github.com/C242-DT02-Day-Trips-Optimization/Machine_Learning.git
    cd Machine_Learning
    ```
 
 2. Create a new Conda environment:
 
    ```bash
-   conda create --name cluster_env python=3.9
+   conda create --name cluster_env python=3.12
    conda activate cluster_env
    ```
 
@@ -94,80 +95,132 @@ Use this example JSON to test the `/cluster/` endpoint:
 ```json
 {
     "points": [
-        {
-            "name": "Uluwatu Temple",
-            "coordinates": [-8.831325, 115.088114],
-            "opening_hours": "08:00",
-            "closing_hours": "18:00",
-            "duration": 2
-        },
-        {
-            "name": "Tanah Lot",
-            "coordinates": [-8.621069, 115.086853],
-            "opening_hours": "09:00",
-            "closing_hours": "19:00",
-            "duration": 2
-        },
-        {
-            "name": "Tegallalang Rice Terraces",
-            "coordinates": [-8.432983, 115.279935],
-            "opening_hours": "07:00",
-            "closing_hours": "17:00",
-            "duration": 3
-        },
-        {
-            "name": "Ubud Monkey Forest",
-            "coordinates": [-8.518644, 115.258481],
-            "opening_hours": "08:30",
-            "closing_hours": "18:00",
-            "duration": 2
-        },
-        {
-            "name": "Kuta Beach",
-            "coordinates": [-8.717879, 115.169208],
-            "opening_hours": "06:00",
-            "closing_hours": "20:00",
-            "duration": 3
-        },
-        {
-            "name": "Mount Batur",
-            "coordinates": [-8.242036, 115.375289],
-            "opening_hours": "03:00",
-            "closing_hours": "15:00",
-            "duration": 4
-        },
-        {
-            "name": "Sanur Beach",
-            "coordinates": [-8.688614, 115.261849],
-            "opening_hours": "06:00",
-            "closing_hours": "18:00",
-            "duration": 2
-        },
-        {
-            "name": "Bali Safari and Marine Park",
-            "coordinates": [-8.606277, 115.319167],
-            "opening_hours": "09:00",
-            "closing_hours": "17:00",
-            "duration": 4
-        },
-        {
-            "name": "Pura Besakih",
-            "coordinates": [-8.384272, 115.451038],
-            "opening_hours": "07:00",
-            "closing_hours": "18:00",
-            "duration": 3
-        },
-        {
-            "name": "Nusa Dua Beach",
-            "coordinates": [-8.801580, 115.226798],
-            "opening_hours": "07:00",
-            "closing_hours": "19:00",
-            "duration": 2
-        }
+        {"name": "Surabaya Zoo", "coordinates": [-7.3024, 112.7367]},
+        {"name": "House of Sampoerna", "coordinates": [-7.2482, 112.7356]},
+        {"name": "Submarine Monument", "coordinates": [-7.2656, 112.7461]},
+        {"name": "Tugu Pahlawan", "coordinates": [-7.2458, 112.7374]},
+        {"name": "Ciputra Waterpark", "coordinates": [-7.3167, 112.6308]},
+        {"name": "Kenjeran Beach", "coordinates": [-7.2488, 112.8058]},
+        {"name": "Galaxy Mall Surabaya", "coordinates": [-7.2940, 112.7700]},
+        {"name": "Suroboyo Bridge", "coordinates": [-7.2475, 112.7802]},
+        {"name": "Suro and Boyo Statue", "coordinates": [-7.3053, 112.7385]},
+        {"name": "Pakuwon Mall", "coordinates": [-7.2916, 112.6429]}
     ],
     "num_clusters": 3,
-    "daily_start_time": "07:00",
-    "daily_end_time": "21:00"
+    "province": "jawa timur",
+    "daily_start_time": "08:00",
+    "daily_end_time": "18:00"
+}
+```
+
+### Response
+
+```json
+{
+  "grouped_clusters": [
+    {
+      "cluster": 0,
+      "avg_duration": 109,
+      "schedule": [
+        {
+          "name": "House of Sampoerna",
+          "avg_duration": 109,
+          "travel_time": null,
+          "mode": null
+        },
+        {
+          "name": "Tugu Pahlawan",
+          "avg_duration": 109,
+          "travel_time": 6,
+          "mode": "walking"
+        },
+        {
+          "name": "Submarine Monument",
+          "avg_duration": 109,
+          "travel_time": 9,
+          "mode": "driving"
+        },
+        {
+          "name": "Suroboyo Bridge",
+          "avg_duration": 109,
+          "travel_time": 19,
+          "mode": "driving"
+        },
+        {
+          "name": "Kenjeran Beach",
+          "avg_duration": 109,
+          "travel_time": 9,
+          "mode": "driving"
+        }
+      ]
+    },
+    {
+      "cluster": 1,
+      "avg_duration": 189,
+      "schedule": [
+        {
+          "name": "Surabaya Zoo",
+          "avg_duration": 189,
+          "travel_time": null,
+          "mode": null
+        },
+        {
+          "name": "Suro and Boyo Statue",
+          "avg_duration": 189,
+          "travel_time": 15,
+          "mode": "walking"
+        },
+        {
+          "name": "Galaxy Mall Surabaya",
+          "avg_duration": 189,
+          "travel_time": 16,
+          "mode": "driving"
+        }
+      ]
+    },
+    {
+      "cluster": 2,
+      "avg_duration": 292,
+      "schedule": [
+        {
+          "name": "Ciputra Waterpark",
+          "avg_duration": 292,
+          "travel_time": null,
+          "mode": null
+        },
+        {
+          "name": "Pakuwon Mall",
+          "avg_duration": 292,
+          "travel_time": 15,
+          "mode": "driving"
+        }
+      ]
+    }
+  ],
+  "final_unvisitable": []
+}
+```
+
+Use this example JSON to test the `/recommend/` endpoint:
+
+```json
+{
+    "points": [
+        {"name": "Surabaya Zoo", "coordinates": [-7.3024, 112.7367]},
+        {"name": "House of Sampoerna", "coordinates": [-7.2482, 112.7356]},
+        {"name": "Submarine Monument", "coordinates": [-7.2656, 112.7461]},
+        {"name": "Tugu Pahlawan", "coordinates": [-7.2458, 112.7374]},
+        {"name": "Ciputra Waterpark", "coordinates": [-7.3167, 112.6308]},
+        {"name": "Kenjeran Beach", "coordinates": [-7.2488, 112.8058]},
+        {"name": "Galaxy Mall Surabaya", "coordinates": [-7.2940, 112.7700]},
+        {"name": "Suroboyo Bridge", "coordinates": [-7.2475, 112.7802]},
+        {"name": "Suro and Boyo Statue", "coordinates": [-7.3053, 112.7385]},
+        {"name": "Pakuwon Mall", "coordinates": [-7.2916, 112.6429]}
+    ],
+    "num_clusters": 3,
+    "province": "jawa timur",
+    "daily_start_time": "08:00",
+    "daily_end_time": "18:00"
 }
 ```
 
@@ -180,69 +233,77 @@ Use this example JSON to test the `/cluster/` endpoint:
       "cluster": 0,
       "schedule": [
         {
-          "name": "Sanur Beach",
-          "start_time": "07:00",
-          "end_time": "09:00"
+          "name": "Ciputra Waterpark",
+          "avg_duration": 292,
+          "travel_time": null,
+          "mode": null
         },
         {
-          "name": "Bali Safari and Marine Park",
-          "start_time": "09:00",
-          "end_time": "13:00"
-        },
-        {
-          "name": "Ubud Monkey Forest",
-          "start_time": "13:00",
-          "end_time": "15:00"
+          "name": "Pakuwon Mall",
+          "avg_duration": 292,
+          "travel_time": 15,
+          "mode": "driving"
         }
-      ]
+      ],
+      "avg_duration": 292
     },
     {
       "cluster": 1,
       "schedule": [
         {
-          "name": "Kuta Beach",
-          "start_time": "07:00",
-          "end_time": "10:00"
+          "name": "Surabaya Zoo",
+          "avg_duration": 58,
+          "travel_time": null,
+          "mode": null
         },
         {
-          "name": "Nusa Dua Beach",
-          "start_time": "10:00",
-          "end_time": "12:00"
+          "name": "Suro and Boyo Statue",
+          "avg_duration": 58,
+          "travel_time": 15,
+          "mode": "walking"
         },
         {
-          "name": "Uluwatu Temple",
-          "start_time": "12:00",
-          "end_time": "14:00"
+          "name": "Galaxy Mall Surabaya",
+          "avg_duration": 58,
+          "travel_time": 16,
+          "mode": "driving"
         },
         {
-          "name": "Tanah Lot",
-          "start_time": "14:00",
-          "end_time": "16:00"
+          "name": "Submarine Monument",
+          "avg_duration": 58,
+          "travel_time": 18,
+          "mode": "driving"
+        },
+        {
+          "name": "House of Sampoerna",
+          "avg_duration": 58,
+          "travel_time": 10,
+          "mode": "driving"
+        },
+        {
+          "name": "Tugu Pahlawan",
+          "avg_duration": 58,
+          "travel_time": 6,
+          "mode": "walking"
+        },
+        {
+          "name": "Suroboyo Bridge",
+          "avg_duration": 58,
+          "travel_time": 16,
+          "mode": "driving"
+        },
+        {
+          "name": "Kenjeran Beach",
+          "avg_duration": 58,
+          "travel_time": 9,
+          "mode": "driving"
         }
-      ]
-    },
-    {
-      "cluster": 2,
-      "schedule": [
-        {
-          "name": "Mount Batur",
-          "start_time": "07:00",
-          "end_time": "11:00"
-        },
-        {
-          "name": "Pura Besakih",
-          "start_time": "11:00",
-          "end_time": "14:00"
-        },
-        {
-          "name": "Tegallalang Rice Terraces",
-          "start_time": "14:00",
-          "end_time": "17:00"
-        }
-      ]
+      ],
+      "avg_duration": 58
     }
   ],
-  "final_unvisitable": []
+  "final_unvisitable": [],
+  "recommended_days": 2
 }
 ```
 
