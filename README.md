@@ -120,78 +120,78 @@ Use this example JSON to test the `/cluster/` endpoint:
   "grouped_clusters": [
     {
       "cluster": 0,
-      "avg_duration": 186,
+      "avg_duration": 109,
       "schedule": [
         {
-          "name": "Surabaya Zoo",
-          "avg_duration": 186,
+          "name": "House of Sampoerna",
+          "avg_duration": 109,
           "travel_time": null,
           "mode": null
         },
         {
-          "name": "Suro and Boyo Statue",
-          "avg_duration": 186,
-          "travel_time": 20,
+          "name": "Tugu Pahlawan",
+          "avg_duration": 109,
+          "travel_time": 6,
+          "mode": "walking"
+        },
+        {
+          "name": "Submarine Monument",
+          "avg_duration": 109,
+          "travel_time": 9,
           "mode": "driving"
         },
         {
-          "name": "Galaxy Mall Surabaya",
-          "avg_duration": 186,
-          "travel_time": 20,
+          "name": "Suroboyo Bridge",
+          "avg_duration": 109,
+          "travel_time": 19,
+          "mode": "driving"
+        },
+        {
+          "name": "Kenjeran Beach",
+          "avg_duration": 109,
+          "travel_time": 9,
           "mode": "driving"
         }
       ]
     },
     {
       "cluster": 1,
-      "avg_duration": 104,
+      "avg_duration": 189,
       "schedule": [
         {
-          "name": "House of Sampoerna",
-          "avg_duration": 104,
+          "name": "Surabaya Zoo",
+          "avg_duration": 189,
           "travel_time": null,
           "mode": null
         },
         {
-          "name": "Tugu Pahlawan",
-          "avg_duration": 104,
-          "travel_time": 20,
-          "mode": "driving"
+          "name": "Suro and Boyo Statue",
+          "avg_duration": 189,
+          "travel_time": 15,
+          "mode": "walking"
         },
         {
-          "name": "Submarine Monument",
-          "avg_duration": 104,
-          "travel_time": 20,
-          "mode": "driving"
-        },
-        {
-          "name": "Suroboyo Bridge",
-          "avg_duration": 104,
-          "travel_time": 20,
-          "mode": "driving"
-        },
-        {
-          "name": "Kenjeran Beach",
-          "avg_duration": 104,
-          "travel_time": 20,
+          "name": "Galaxy Mall Surabaya",
+          "avg_duration": 189,
+          "travel_time": 16,
           "mode": "driving"
         }
       ]
     },
     {
       "cluster": 2,
-      "avg_duration": 290,
+      "avg_duration": 292,
       "schedule": [
         {
           "name": "Ciputra Waterpark",
-          "avg_duration": 290,
+          "avg_duration": 292,
           "travel_time": null,
           "mode": null
         },
         {
           "name": "Pakuwon Mall",
-          "avg_duration": 290,
-          "travel_time": 20,
+          "avg_duration": 292,
+          "travel_time": 15,
           "mode": "driving"
         }
       ]
@@ -234,72 +234,72 @@ Use this example JSON to test the `/recommend/` endpoint:
       "schedule": [
         {
           "name": "Ciputra Waterpark",
-          "avg_duration": 290,
+          "avg_duration": 292,
           "travel_time": null,
           "mode": null
         },
         {
           "name": "Pakuwon Mall",
-          "avg_duration": 290,
-          "travel_time": 20,
+          "avg_duration": 292,
+          "travel_time": 15,
           "mode": "driving"
         }
       ],
-      "avg_duration": 290
+      "avg_duration": 292
     },
     {
       "cluster": 1,
       "schedule": [
         {
           "name": "Surabaya Zoo",
-          "avg_duration": 57,
+          "avg_duration": 58,
           "travel_time": null,
           "mode": null
         },
         {
           "name": "Suro and Boyo Statue",
-          "avg_duration": 57,
-          "travel_time": 20,
-          "mode": "driving"
+          "avg_duration": 58,
+          "travel_time": 15,
+          "mode": "walking"
         },
         {
           "name": "Galaxy Mall Surabaya",
-          "avg_duration": 57,
-          "travel_time": 20,
+          "avg_duration": 58,
+          "travel_time": 16,
           "mode": "driving"
         },
         {
           "name": "Submarine Monument",
-          "avg_duration": 57,
-          "travel_time": 20,
+          "avg_duration": 58,
+          "travel_time": 18,
           "mode": "driving"
         },
         {
           "name": "House of Sampoerna",
-          "avg_duration": 57,
-          "travel_time": 20,
+          "avg_duration": 58,
+          "travel_time": 10,
           "mode": "driving"
         },
         {
           "name": "Tugu Pahlawan",
-          "avg_duration": 57,
-          "travel_time": 20,
-          "mode": "driving"
+          "avg_duration": 58,
+          "travel_time": 6,
+          "mode": "walking"
         },
         {
           "name": "Suroboyo Bridge",
-          "avg_duration": 57,
-          "travel_time": 20,
+          "avg_duration": 58,
+          "travel_time": 16,
           "mode": "driving"
         },
         {
           "name": "Kenjeran Beach",
-          "avg_duration": 57,
-          "travel_time": 20,
+          "avg_duration": 58,
+          "travel_time": 9,
           "mode": "driving"
         }
       ],
-      "avg_duration": 57
+      "avg_duration": 58
     }
   ],
   "final_unvisitable": [],
