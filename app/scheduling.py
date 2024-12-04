@@ -4,9 +4,18 @@ import pandas as pd
 from datetime import datetime
 import googlemaps
 import math
+import os
+from dotenv import load_dotenv
 
-# Initialize the Google Maps client with API key
-gmaps = googlemaps.Client(key='API_KEY')
+# Load environment variables
+load_dotenv()
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# Initialize the Google Maps client with the actual API key from the environment variable
+if not GOOGLE_API_KEY:
+    raise ValueError("Google API Key is not set in environment variables.")
+
+gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
 
 def get_travel_time(start_coords, end_coords, distance_threshold=1.0):
     """
