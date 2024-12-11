@@ -174,6 +174,10 @@ def load_model(province: str):
         model_path = 'model/jatim.pkl'  
     elif province.lower() == ('jawa barat' or 'west java'):
         model_path = 'model/jabar.pkl'  
+    elif province.lower() == ('jawa tengah' or 'central java'):
+        model_path = 'model/jateng.pkl'  
+    elif province.lower() == ('jakarta' or 'dki jakarta'):
+        model_path = 'model/jakarta.pkl'  
     elif province.lower() == 'bali':
         model_path = 'model/bali.pkl'  
     else:
