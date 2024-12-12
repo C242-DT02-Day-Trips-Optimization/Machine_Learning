@@ -23,7 +23,7 @@ This repository contains a FastAPI-based project that performs clustering using 
 
 ## Prerequisites
 
-- **Python 3.12**
+- **Python 3.9**
 - **Conda** (Optional)
 
 ## Installation
@@ -33,7 +33,7 @@ Example of setting up a virtual environment using **Conda** to manage dependenci
 1. Clone the repository:
 
    ```bash
-   https://github.com/C242-DT02-Day-Trips-Optimization/Machine_Learning.git
+   git clone https://github.com/C242-DT02-Day-Trips-Optimization/Machine_Learning.git
    cd Machine_Learning
    ```
 
