@@ -40,7 +40,7 @@ Example of setting up a virtual environment using **Conda** to manage dependenci
 2. Create a new Conda environment:
 
    ```bash
-   conda create --name cluster_env python=3.12
+   conda create --name cluster_env python=3.9
    conda activate cluster_env
    ```
 
