@@ -74,6 +74,12 @@ Machine_Learning/
 │   ├── Jakarta.ipynb
 │   ├── Jateng.ipynb
 │   ├── Jatim.ipynb
+│   ├── data/
+│   │   ├── bali.csv
+│   │   ├── CentralJava.csv
+│   │   ├── jabar.csv
+│   │   ├── jatim.csv
+│   │   ├── TempatWisataJakarta.csv
 ├── app/
 │   ├── clustering.py           # Customized TensorFlow K-means clustering
 │   ├── evaluation.py           # Evaluation metrics (silhouette score, etc.)
