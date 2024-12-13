@@ -67,7 +67,7 @@ To start the FastAPI application, use **Uvicorn**, an ASGI server that runs the 
 The main structure of this project is:
 
 ```
-fastapi-clustering/
+Machine_Learning/
 ├── app/
 │   ├── clustering.py           # Customized TensorFlow K-means clustering
 │   ├── evaluation.py           # Evaluation metrics (silhouette score, etc.)
