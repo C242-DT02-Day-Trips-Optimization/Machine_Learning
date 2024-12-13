@@ -33,7 +33,7 @@ Example of setting up a virtual environment using **Conda** to manage dependenci
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/C242-DT02-Day-Trips-Optimization/Machine_Learning.git
+   git clone https://github.com/C242-DT02-Day-Trips-Optimization/Machine_Learning
    cd Machine_Learning
    ```
 
