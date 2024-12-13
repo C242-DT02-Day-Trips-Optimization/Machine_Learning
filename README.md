@@ -68,6 +68,12 @@ The main structure of this project is:
 
 ```
 Machine_Learning/
+├── Notebook/
+│   ├── Bali.ipynb
+│   ├── Jabar.ipynb
+│   ├── Jakarta.ipynb
+│   ├── Jateng.ipynb
+│   ├── Jatim.ipynb
 ├── app/
 │   ├── clustering.py           # Customized TensorFlow K-means clustering
 │   ├── evaluation.py           # Evaluation metrics (silhouette score, etc.)
