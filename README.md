@@ -88,9 +88,14 @@ Machine_Learning/
 ## API Endpoints
 
 **Cluster Locations** (`POST /cluster/`):
-   - Clusters locations based on coordinates and schedules visits within specified business hours.
+   - Clusters locations based on coordinates and schedules visits based on proximity.
    - **Input**: JSON object containing `Location` data points and clustering parameters.
-   - **Output**: Grouped clusters with schedules and unvisitable locations.
+   - **Output**: Grouped clusters with average duration visit per day, travel times, and mode of travel.
+
+**Cluster Locations** (`POST /recommend/`):
+   - Clusters locations based on coordinates and schedules visits based on proximity.
+   - **Input**: JSON object containing `Location` data points and clustering parameters.
+   - **Output**: Grouped clusters with average duration visit per day, travel times, mode of travel, and recommendation number of days.
 
 ## Example 
 
@@ -319,6 +324,3 @@ Use this example JSON to test the `/recommend/` endpoint:
 
 <img src="https://github.com/Gumm11/Multi-Day-Cluster/blob/main/static/cluster_plot.png" width="600" />
 <img src="https://github.com/Gumm11/Multi-Day-Cluster/blob/main/static/routing_plot.png" width="600" />
-<img src="https://github.com/Gumm11/Multi-Day-Cluster/blob/main/static/schedule_table_cluster_0.png" width="600" />
-<img src="https://github.com/Gumm11/Multi-Day-Cluster/blob/main/static/schedule_table_cluster_1.png" width="600" />
-<img src="https://github.com/Gumm11/Multi-Day-Cluster/blob/main/static/schedule_table_cluster_2.png" width="600" />
