@@ -92,7 +92,7 @@ Machine_Learning/
    - **Input**: JSON object containing `Location` data points and clustering parameters.
    - **Output**: Grouped clusters with average duration visit per day, travel times, and mode of travel.
 
-**Cluster Locations** (`POST /recommend/`):
+**Recommended Cluster** (`POST /recommend/`):
    - Clusters locations based on coordinates and schedules visits based on proximity.
    - **Input**: JSON object containing `Location` data points and clustering parameters.
    - **Output**: Grouped clusters with average duration visit per day, travel times, mode of travel, and recommendation number of days.
