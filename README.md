@@ -79,7 +79,9 @@ fastapi-clustering/
 ├── model/
 │   ├── jatim.pkl          
 │   ├── bali.pkl         
-│   ├── jateng.pkl           
+│   ├── jateng.pkl
+│   ├── jabar.pkl
+│   ├── jakarta.pkl
 ├── requirements.txt            # Dependencies
 ```
 
